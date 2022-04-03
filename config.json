@@ -1,0 +1,12 @@
+{ 
+    "wallets": [
+    ],
+    "networks": [
+        {
+            "lcdUrl": "https://lcd-osmosis.blockapsis.com/",
+            "rpcUrl": "https://rpc-osmosis.blockapsis.com/",
+            "prefix": "osmo",
+            "derivationPath": "m/44'/118'/0'/0/"
+        }
+    ]
+}
