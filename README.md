@@ -7,6 +7,10 @@ Add mnemonics and account indexes to config
         { 
             "mnemonic": "12 seed words",
             "indexes": [0, 1, 2]
+        },
+        { 
+            "mnemonic": "another 12 seed words",
+            "indexes": [0, 1]
         }
     ]
 ```
