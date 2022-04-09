@@ -1,5 +1,5 @@
 # Cosmos-Voter
-Script to auto-voting on Cosmos SDK networks
+Script to auto-voting on Cosmos SDK networks.
 
 Add mnemonics and account indexes to config 
 ```
@@ -12,6 +12,8 @@ Add mnemonics and account indexes to config
             "mnemonic": "another 12 seed words",
             "indexes": [0, 1]
         }
-    ]
+]
 ```
-Run npm install and then node index
+Run ``` npm install ``` 
+
+and then ``` node index ```
