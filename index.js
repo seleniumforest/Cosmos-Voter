@@ -83,7 +83,7 @@ const processWallet = async (wallet, network) => {
         let votingEndTime = moment(p.voting_end_time).utc();
         let now = moment().utc();
         let diff = votingEndTime.diff(now, "hours");
-        if (diff > 2) {
+        if (diff > 1) {
             log.info(`proposal ${p.proposal_id} ends in ${diff} hours`)
             continue;
         }
@@ -121,4 +121,4 @@ const _main = async () => {
 }
 
 _main();
-setInterval(_main, 1000 * 60 * 3600)
+setInterval(_main, 3600000); //1 hour
