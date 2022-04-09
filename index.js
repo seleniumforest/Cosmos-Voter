@@ -7,11 +7,17 @@ const proto_signing = require("@cosmjs/proto-signing");
 const crypto = require("@cosmjs/crypto");
 const stargate = require("@cosmjs/stargate");
 
+const log = require('simple-node-logger').createSimpleLogger({
+    logFilePath:'mylogfile.log',
+    timestampFormat:'MM-DD HH:MM'
+});
+
 const getProposalList = async (lcdUrl) =>
-    (await axios.get(lcdUrl + "/cosmos/gov/v1beta1/proposals?proposal_status=2")).data.proposals;
+    (await axios.get(lcdUrl + "/cosmos/gov/v1beta1/proposals?proposal_status=2"))
+        .data
+        .proposals;
 
 const vote = async (rpc, signer, proposalId, address) => {
-
     let url = rpc + `cosmos/gov/v1beta1/proposals/${proposalId}/tally`;
     let tally = (await axios.get(url)).data.tally;
     let mostVotes = Math.max(tally.yes, tally.no, tally.abstain, tally.no_with_veto);
@@ -44,8 +50,8 @@ const vote = async (rpc, signer, proposalId, address) => {
         ]
     }
 
-    console.log(`trying to vote for prop ${proposalId} from ${address} rpc ${rpc}`);
-    return await signer.signAndBroadcast(address, msg, fee);
+    log.info(`trying to vote for prop ${proposalId} from ${address}`);
+    return await signer.signAndBroadcast(address, [msg], fee);
 }
 
 const getClient = async (rpc, mnemonic, hdPaths, prefix) => {
@@ -64,8 +70,12 @@ const getClient = async (rpc, mnemonic, hdPaths, prefix) => {
 }
 
 const processWallet = async (wallet, network) => {
-    let derivationPaths = wallet.indexes.map(x => crypto.stringToPath(network.derivationPath + x));
-    let client = await getClient(network.rpcUrl, wallet.mnemonic, derivationPaths, network.prefix);
+    let derivationPaths = wallet
+        .indexes
+        .map(x => crypto.stringToPath(network.derivationPath + x));
+
+    let client = await 
+        getClient(network.rpcUrl, wallet.mnemonic, derivationPaths, network.prefix);
     let proposals = await getProposalList(network.lcdUrl);
     let addresses = await client.wallet.getAccounts();
 
@@ -74,12 +84,20 @@ const processWallet = async (wallet, network) => {
         let now = moment().utc();
         let diff = votingEndTime.diff(now, "hours");
         if (diff > 2) {
-            console.log(`proposal ${p.proposal_id} ends in ${diff} hours`)
+            log.info(`proposal ${p.proposal_id} ends in ${diff} hours`)
             continue;
         }
 
         for (let a of addresses) {
-            let voteResult = await vote(network.lcdUrl, client.signer, p.proposal_id, a.address);
+            let voteResult = await 
+                vote(network.lcdUrl, client.signer, p.proposal_id, a.address);
+            
+            try {
+                stargate.assertIsDeliverTxSuccess(voteResult);
+            } 
+            catch (e) {
+                log.error(e);
+            }
         }
     }
 }
@@ -93,5 +111,14 @@ const main = async () => {
             await processWallet(w, n);
 }
 
-//main();
-setInterval(() => main(), 1000 * 60 * 3600)
+const _main = async () => {
+    try {
+        await main();
+    }
+    catch (e) {
+        log.error(e);
+    }
+}
+
+_main();
+setInterval(_main, 1000 * 60 * 3600)
