@@ -17,17 +17,17 @@ const getProposalList = async (lcdUrl) =>
         .data
         .proposals;
 
-const vote = async (rpc, signer, proposalId, address) => {
-    let url = rpc + `cosmos/gov/v1beta1/proposals/${proposalId}/tally`;
+const vote = async (network, signer, proposalId, address) => {
+    let url = `${network.lcdUrl}cosmos/gov/v1beta1/proposals/${proposalId}/tally`;
     let tally = (await axios.get(url)).data.tally;
     let mostVotes = Math.max(tally.yes, tally.no, tally.abstain, tally.no_with_veto);
     let key = Object.keys(tally).find(x => tally[x] === mostVotes.toString())
 
-    let option = 0;
+    let option = -1;
     switch (key) {
         case "yes": option = 1; break;
-        case "no": option = 3; break;
         case "abstain": option = 2; break;
+        case "no": option = 3; break;
         case "no_with_veto": option = 4; break;
     }
 
@@ -40,18 +40,8 @@ const vote = async (rpc, signer, proposalId, address) => {
         }
     }
 
-    let fee = {
-        gas: "250000",
-        amount: [
-            {
-                denom: "uosmo",
-                amount: "6250"
-            }
-        ]
-    }
-
-    log.info(`trying to vote for prop ${proposalId} from ${address}`);
-    return await signer.signAndBroadcast(address, [msg], fee);
+    log.info(`trying to vote for prop ${proposalId} - ${key} from ${address}`);
+    return await signer.signAndBroadcast(address, [msg], network.votingFee);
 }
 
 const getClient = async (rpc, mnemonic, hdPaths, prefix) => {
@@ -84,16 +74,17 @@ const processWallet = async (wallet, network) => {
         let now = moment().utc();
         let diff = votingEndTime.diff(now, "hours");
         if (diff > 1) {
-            log.info(`proposal ${p.proposal_id} ends in ${diff} hours`)
+            log.info(`${network.prefix}: proposal ${p.proposal_id} ends in ${diff} hours`)
             continue;
         }
 
         for (let a of addresses) {
             let voteResult = await 
-                vote(network.lcdUrl, client.signer, p.proposal_id, a.address);
+                vote(network, client.signer, p.proposal_id, a.address);
             
             try {
                 stargate.assertIsDeliverTxSuccess(voteResult);
+                log.info(`${network.prefix}: voting for proposal ${p.proposal_id} success`); 
             } 
             catch (e) {
                 log.error(e);
@@ -105,6 +96,12 @@ const processWallet = async (wallet, network) => {
 const main = async () => {
     let wallets = config.wallets;
     let networks = config.networks;
+
+    if (!(wallets instanceof Array) || wallets.length === 0 )
+        log.error("no wallets found"); 
+
+    if (!(networks instanceof Array) || networks.length === 0)
+        log.error("no networks found"); 
 
     for (let w of wallets)
         for (let n of networks)
@@ -121,4 +118,4 @@ const _main = async () => {
 }
 
 _main();
-setInterval(_main, 3600000); //1 hour
+setInterval(_main, 60 * 60 * 1000);
