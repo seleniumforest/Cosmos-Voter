@@ -17,3 +17,11 @@ Add mnemonics and account indexes to config
 Run ``` npm install ``` 
 
 and then ``` node index ```
+
+todo:
+
+dont check proposals multiple times for every wallet
+
+add restaking feature
+
+add networks - cosmoshub, juno, secret, terra
