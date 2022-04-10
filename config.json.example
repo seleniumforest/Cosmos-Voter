@@ -1,0 +1,23 @@
+{
+    "wallets": [
+        { "mnemonics": "12 seed words", "indexes": [0,1,2] },
+        { "mnemonics": "another 12 seed words", "indexes": [0,1] }
+    ],
+    "networks": [
+        {
+            "lcdUrl": "https://lcd-osmosis.blockapsis.com/",
+            "rpcUrl": "https://rpc-osmosis.blockapsis.com/",
+            "prefix": "osmo",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingFee": {
+                "gas": "250000",
+                "amount": [
+                    {
+                        "denom": "uosmo",
+                        "amount": "6250"
+                    }
+                ]
+            }
+        }
+    ]
+}

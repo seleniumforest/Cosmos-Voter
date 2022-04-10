@@ -1,5 +1,8 @@
 .DS_Store
 
+#  do not show seed phrases :)
+config.json
+
 # Logs
 logs
 *.log
