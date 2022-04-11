@@ -14,4 +14,6 @@ and then ``` node index ```
 
 add restaking feature
 
+refactor - split script into multiple files
+
 add networks - [x] cosmoshub, [x] juno, secret, terra
