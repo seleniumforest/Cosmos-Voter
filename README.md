@@ -2,6 +2,7 @@
 Script to auto-voting on Cosmos SDK networks.
 
 Rename config.json.example to config.json and edit this file as you need. 
+Wallet indexes means an last digit in derivation path, i.e. account index generated from seed
 
 Run ``` npm install ``` 
 
@@ -13,4 +14,4 @@ and then ``` node index ```
 
 add restaking feature
 
-add networks - cosmoshub, juno, secret, terra
+add networks - [x] cosmoshub, [x] juno, secret, terra

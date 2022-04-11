@@ -104,6 +104,10 @@ const main = async () => {
 
     for (let n of networks) {
         let proposals = await getProposalList(n.lcdUrl);
+        if (!proposals || proposals.length === 0) {
+            log.info(`${n.prefix}: no active proposals`);
+            continue;
+        }
 
         for (let w of wallets)
             await processWallet(w, n, proposals);
