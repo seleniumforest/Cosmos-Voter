@@ -59,14 +59,13 @@ const getClient = async (rpc, mnemonic, hdPaths, prefix) => {
     return { signer, wallet }
 }
 
-const processWallet = async (wallet, network) => {
+const processWallet = async (wallet, network, proposals) => {
     let derivationPaths = wallet
         .indexes
         .map(x => crypto.stringToPath(network.derivationPath + x));
 
     let client = await 
         getClient(network.rpcUrl, wallet.mnemonic, derivationPaths, network.prefix);
-    let proposals = await getProposalList(network.lcdUrl);
     let addresses = await client.wallet.getAccounts();
 
     for (let p of proposals) {
@@ -103,9 +102,12 @@ const main = async () => {
     if (!(networks instanceof Array) || networks.length === 0)
         log.error("no networks found"); 
 
-    for (let w of wallets)
-        for (let n of networks)
-            await processWallet(w, n);
+    for (let n of networks) {
+        let proposals = await getProposalList(n.lcdUrl);
+
+        for (let w of wallets)
+            await processWallet(w, n, proposals);
+    }
 }
 
 const _main = async () => {

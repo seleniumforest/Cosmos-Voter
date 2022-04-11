@@ -9,7 +9,7 @@ and then ``` node index ```
 
 # todo
 
-dont check proposals multiple times for every wallet
+[x] dont check proposals multiple times for every wallet
 
 add restaking feature
 
