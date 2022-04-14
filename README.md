@@ -12,6 +12,8 @@ and then ``` node index ```
 
 [x] dont check proposals multiple times for every wallet
 
+make logs prettier
+
 add restaking feature
 
 refactor - split script into multiple files
