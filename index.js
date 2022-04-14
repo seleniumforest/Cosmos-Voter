@@ -8,8 +8,8 @@ const crypto = require("@cosmjs/crypto");
 const stargate = require("@cosmjs/stargate");
 
 const log = require('simple-node-logger').createSimpleLogger({
-    logFilePath:'mylogfile.log',
-    timestampFormat:'MM-DD HH:MM'
+    logFilePath: 'mylogfile.log',
+    timestampFormat: 'MM-DD HH:MM'
 });
 
 const getProposalList = async (lcdUrl) =>
@@ -64,27 +64,19 @@ const processWallet = async (wallet, network, proposals) => {
         .indexes
         .map(x => crypto.stringToPath(network.derivationPath + x));
 
-    let client = await 
+    let client = await
         getClient(network.rpcUrl, wallet.mnemonic, derivationPaths, network.prefix);
     let addresses = await client.wallet.getAccounts();
 
     for (let p of proposals) {
-        let votingEndTime = moment(p.voting_end_time).utc();
-        let now = moment().utc();
-        let diff = votingEndTime.diff(now, "hours");
-        if (diff > 1) {
-            log.info(`${network.prefix}: proposal ${p.proposal_id} ends in ${diff} hours`)
-            continue;
-        }
-
         for (let a of addresses) {
-            let voteResult = await 
+            let voteResult = await
                 vote(network, client.signer, p.proposal_id, a.address);
-            
+
             try {
                 stargate.assertIsDeliverTxSuccess(voteResult);
-                log.info(`${network.prefix}: voting for proposal ${p.proposal_id} success`); 
-            } 
+                log.info(`${network.prefix}: voting for proposal ${p.proposal_id} success`);
+            }
             catch (e) {
                 log.error(e);
             }
@@ -96,18 +88,30 @@ const main = async () => {
     let wallets = config.wallets;
     let networks = config.networks;
 
-    if (!(wallets instanceof Array) || wallets.length === 0 )
-        log.error("no wallets found"); 
-
+    if (!(wallets instanceof Array) || wallets.length === 0)
+        log.error("no wallets found");
     if (!(networks instanceof Array) || networks.length === 0)
-        log.error("no networks found"); 
+        log.error("no networks found");
 
     for (let n of networks) {
-        let proposals = await getProposalList(n.lcdUrl);
+        let proposals = (await getProposalList(n.lcdUrl));
+
         if (!proposals || proposals.length === 0) {
             log.info(`${n.prefix}: no active proposals`);
             continue;
         }
+
+        proposals = proposals.filter(p => {
+            let votingEndTime = moment(p.voting_end_time).utc();
+            let now = moment().utc();
+            let diff = votingEndTime.diff(now, "hours");
+            if (diff > 1) {
+                log.info(`${n.prefix}: proposal ${p.proposal_id} ends in ${diff} hours`);
+                return false;
+            }
+            else
+                return true;
+        });
 
         for (let w of wallets)
             await processWallet(w, n, proposals);
