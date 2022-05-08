@@ -17,7 +17,13 @@
                         "amount": "6250"
                     }
                 ]
-            }
+            },
+            "predefinedVotes": [
+                {
+                    "proposalId": 69,
+                    "key": "no_with_veto"
+                }
+            ]
         },
         {
             "lcdUrl": "https://lcd-regen.keplr.app/",

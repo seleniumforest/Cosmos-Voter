@@ -1,62 +1,55 @@
 const Long = require("long");
-const { Registry } = require("@cosmjs/proto-signing");
 const axios = require("axios");
-const config = require("./config.json");
+const config = require("../config.json");
 const moment = require("moment");
-const proto_signing = require("@cosmjs/proto-signing");
 const crypto = require("@cosmjs/crypto");
 const stargate = require("@cosmjs/stargate");
+const { createLogger, getClient } = require("./helpers");
 
-const log = require('simple-node-logger').createSimpleLogger({
-    logFilePath: 'mylogfile.log',
-    timestampFormat: 'MM-DD HH:MM'
-});
-
+const log = createLogger("voter.log");
 const getProposalList = async (lcdUrl) =>
     (await axios.get(lcdUrl + "/cosmos/gov/v1beta1/proposals?proposal_status=2"))
         .data
         .proposals;
 
-const vote = async (network, signer, proposalId, address) => {
+const voteOptions = {
+    "yes": 1,
+    "abstain": 2,
+    "no": 3,
+    "no_with_veto": 4
+}
+
+const getMostPopularVoteOption = async (network, proposalId) => {
     let url = `${network.lcdUrl}cosmos/gov/v1beta1/proposals/${proposalId}/tally`;
     let tally = (await axios.get(url)).data.tally;
     let mostVotes = Math.max(tally.yes, tally.no, tally.abstain, tally.no_with_veto);
     let key = Object.keys(tally).find(x => tally[x] === mostVotes.toString())
 
-    let option = -1;
-    switch (key) {
-        case "yes": option = 1; break;
-        case "abstain": option = 2; break;
-        case "no": option = 3; break;
-        case "no_with_veto": option = 4; break;
-    }
+    return { key: key, option: voteOptions[key] };
+}
+
+const getPredefinedVoteOption = (network, proposalId) => {
+    let key = network?.predefinedVotes?.find(x => x.proposalId.toString() === proposalId.toString())?.key;
+    if (!key) return;
+
+    return { key, option: voteOptions[key] }
+}
+
+const vote = async (network, signer, proposalId, address) => {
+    let voteOption = getPredefinedVoteOption(network, proposalId) ||
+                await getMostPopularVoteOption(network, proposalId);
 
     let msg = {
         typeUrl: "/cosmos.gov.v1beta1.MsgVote",
         value: {
             proposalId: Long.fromString(proposalId),
             voter: address,
-            option: option
+            option: voteOption.option
         }
     }
 
-    log.info(`trying to vote for prop ${proposalId} - ${key} from ${address}`);
+    log.info(`trying to vote for prop ${proposalId} - ${voteOption.key} from ${address}`);
     return await signer.signAndBroadcast(address, [msg], network.votingFee);
-}
-
-const getClient = async (rpc, mnemonic, hdPaths, prefix) => {
-    const wallet = await proto_signing.DirectSecp256k1HdWallet.fromMnemonic(
-        mnemonic,
-        { hdPaths, prefix }
-    );
-
-    const signer = await stargate.SigningStargateClient.connectWithSigner(
-        rpc,
-        wallet,
-        { registry: new Registry(stargate.defaultRegistryTypes) }
-    );
-
-    return { signer, wallet }
 }
 
 const processWallet = async (wallet, network, proposals) => {
