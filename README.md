@@ -1,5 +1,5 @@
 # Cosmos-Voter
-Script to auto-voting on Cosmos SDK networks.
+Script for auto-voting on Cosmos SDK networks.
 
 Rename config.json.example to config.json and edit this file as you need. 
 Wallet indexes means an last digit in derivation path, i.e. account index generated from seed
@@ -18,4 +18,4 @@ add restaking feature
 
 refactor - split script into multiple files
 
-add networks - [x] cosmoshub, [x] juno, secret, terra
+add networks - [x] cosmoshub, [x] juno, secret, terra, evmos
