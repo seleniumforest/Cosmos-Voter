@@ -1,12 +1,48 @@
 {
     "wallets": [
-        { "mnemonics": "12 seed words", "indexes": [0,1,2] },
-        { "mnemonics": "another 12 seed words", "indexes": [0, 1] }
+        {
+            "mnemonics": "12 seed words",
+            "indexes": [
+                0,
+                1,
+                2
+            ]
+        },
+        {
+            "mnemonics": "another 12 seed words",
+            "indexes": [
+                0,
+                1
+            ]
+        }
     ],
     "networks": [
         {
-            "lcdUrl": "https://lcd-osmosis.blockapsis.com/",
-            "rpcUrl": "https://rpc-osmosis.blockapsis.com/",
+            "restakeOptions": {
+                "minRestakeAmount": 500000,
+                "minWalletBalance": 100000,
+                "denom": "uosmo",
+                "claimFee": {
+                    "gas": "250000",
+                    "amount": [
+                        {
+                            "denom": "uosmo",
+                            "amount": "6250"
+                        }
+                    ]
+                },
+                "delegateFee": {
+                    "gas": "300000",
+                    "amount": [
+                        {
+                            "denom": "uosmo",
+                            "amount": "7500"
+                        }
+                    ]
+                }
+            },
+            "lcdUrl": "https://lcd-osmosis.keplr.app/",
+            "rpcUrl": "https://rpc-osmosis.keplr.app/",
             "prefix": "osmo",
             "derivationPath": "m/44'/118'/0'/0/",
             "votingFee": {
@@ -26,6 +62,29 @@
             ]
         },
         {
+            "restakeOptions": {
+                "minRestakeAmount": 500000,
+                "minWalletBalance": 100000,
+                "denom": "uregen",
+                "claimFee": {
+                    "gas": "200000",
+                    "amount": [
+                        {
+                            "denom": "uregen",
+                            "amount": "5000"
+                        }
+                    ]
+                },
+                "delegateFee": {
+                    "gas": "300000",
+                    "amount": [
+                        {
+                            "denom": "uregen",
+                            "amount": "7500"
+                        }
+                    ]
+                }
+            },
             "lcdUrl": "https://lcd-regen.keplr.app/",
             "rpcUrl": "https://rpc-regen.keplr.app/",
             "prefix": "regen",
@@ -41,6 +100,29 @@
             }
         },
         {
+            "restakeOptions": {
+                "minRestakeAmount": 500000,
+                "minWalletBalance": 100000,
+                "denom": "uatom",
+                "claimFee": {
+                    "gas": "140000",
+                    "amount": [
+                        {
+                            "denom": "uatom",
+                            "amount": "3500"
+                        }
+                    ]
+                },
+                "delegateFee": {
+                    "gas": "250000",
+                    "amount": [
+                        {
+                            "denom": "uatom",
+                            "amount": "6250"
+                        }
+                    ]
+                }
+            },
             "lcdUrl": "https://api.cosmos.network/",
             "rpcUrl": "https://rpc.cosmos.network/",
             "prefix": "cosmos",
@@ -53,9 +135,38 @@
                         "amount": "2500"
                     }
                 ]
-            }
+            },
+            "predefinedVotes": [
+                {
+                    "proposalId": 69,
+                    "key": "no_with_veto"
+                }
+            ]
         },
         {
+            "restakeOptions": {
+                "minRestakeAmount": 500000,
+                "minWalletBalance": 100000,
+                "denom": "ujuno",
+                "claimFee": {
+                    "gas": "280000",
+                    "amount": [
+                        {
+                            "denom": "ujuno",
+                            "amount": "700"
+                        }
+                    ]
+                },
+                "delegateFee": {
+                    "gas": "250000",
+                    "amount": [
+                        {
+                            "denom": "ujuno",
+                            "amount": "625"
+                        }
+                    ]
+                }
+            },
             "lcdUrl": "https://lcd-juno.itastakers.com/",
             "rpcUrl": "https://rpc-juno.itastakers.com/",
             "prefix": "juno",
