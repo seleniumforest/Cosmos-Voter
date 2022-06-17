@@ -6,7 +6,9 @@ Wallet indexes means an last digit in derivation path, i.e. account index genera
 
 Run ``` npm install ``` 
 
-and then ``` node index ```
+and then ``` node src/jobYouNeed.js ```
+
+or to run all the jobs ``` npm run runall  ```
 
 # todo
 
@@ -14,8 +16,8 @@ and then ``` node index ```
 
 make logs prettier
 
-add restaking feature
+[x] add restaking feature
 
-refactor - split script into multiple files
+[started] refactor - split script into multiple files
 
 add networks - [x] cosmoshub, [x] juno, secret, terra, evmos

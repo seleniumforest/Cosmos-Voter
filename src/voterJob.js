@@ -19,7 +19,7 @@ const voteOptions = {
     "no_with_veto": 4
 }
 
-const getMostPopularVoteOption = (network, proposalId) => {
+const getMostPopularVoteOption = async (network, proposalId) => {
     let url = `${network.lcdUrl}cosmos/gov/v1beta1/proposals/${proposalId}/tally`;
     let tally = (await axios.get(url)).data.tally;
     let mostVotes = Math.max(tally.yes, tally.no, tally.abstain, tally.no_with_veto);
