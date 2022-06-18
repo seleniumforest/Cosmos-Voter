@@ -41,8 +41,8 @@
                     ]
                 }
             },
-            "lcdUrl": "https://lcd-osmosis.keplr.app/",
-            "rpcUrl": "https://rpc-osmosis.keplr.app/",
+            "lcdUrl": "http://osmosis.strange.love:1317/",
+            "rpcUrl": "http://osmosis.strange.love:26657/",
             "prefix": "osmo",
             "derivationPath": "m/44'/118'/0'/0/",
             "votingFee": {
