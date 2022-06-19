@@ -1,7 +1,5 @@
-const Long = require("long");
 const axios = require("axios");
 const config = require("../config.json");
-const moment = require("moment");
 const crypto = require("@cosmjs/crypto");
 const stargate = require("@cosmjs/stargate");
 const { createLogger, getClient } = require("./helpers");
@@ -41,7 +39,7 @@ const processWallet = async (wallet, network) => {
         let delegations = await getRewards(network.lcdUrl, addr);
         let totalRewards = Number(delegations.reduce((acc, del) =>
             Number(del.reward.find(rew => rew.denom === restakeDenom)?.amount) + acc, 0));
-if (addr.slice(0, 4) === "juno") debugger;
+
         if (totalRewards <= minRestakeAmount) {
             log.info(`restakeJob address ${addr} totalRewards ${totalRewards} < minRestakeAmount ${minRestakeAmount}`);
             continue;
