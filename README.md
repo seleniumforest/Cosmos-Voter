@@ -2,7 +2,8 @@
 Script for auto-voting on Cosmos SDK networks.
 
 Rename config.json.example to config.json and edit this file as you need. 
-Wallet indexes means an last digit in derivation path, i.e. account index generated from seed
+Wallet indexes means an last digit in derivation path, i.e. account index generated from seed.
+Voter will choose most popular option at the end of voting. It can be predefined in configuration (see example)
 
 Run ``` npm install ``` 
 
@@ -21,3 +22,9 @@ make logs prettier
 [started] refactor - split script into multiple files
 
 add networks - [x] cosmoshub, [x] juno, [x] secret, terra, [x] evmos
+
+feature to create multiaccounts
+
+feature to restake from jailed or inactive validators for a long time
+
+telegram bot integration
