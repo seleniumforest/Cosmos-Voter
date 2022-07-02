@@ -20,4 +20,4 @@ make logs prettier
 
 [started] refactor - split script into multiple files
 
-add networks - [x] cosmoshub, [x] juno, secret, terra, evmos
+add networks - [x] cosmoshub, [x] juno, [x] secret, terra, [x] evmos

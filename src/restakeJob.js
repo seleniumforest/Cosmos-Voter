@@ -2,10 +2,17 @@ const axios = require("axios");
 const config = require("../config.json");
 const crypto = require("@cosmjs/crypto");
 const stargate = require("@cosmjs/stargate");
-const { createLogger, getClient } = require("./helpers");
+const { createLogger, getClient, getSenderChaindata } = require("./helpers");
 const { MsgWithdrawDelegatorReward } = require("cosmjs-types/cosmos/distribution/v1beta1/tx");
 const { MsgDelegate } = require("cosmjs-types/cosmos/staking/v1beta1/tx");
-
+const { Wallet } = require("@ethersproject/wallet");
+const { createTxMsgWithdrawDelegatorReward, createTxMsgDelegate } = require("@tharsis/transactions");
+const {
+    broadcast,
+    signTransaction,
+} = require("@hanchon/evmos-ts-wallet");
+const { ethToEvmos } = require('@tharsis/address-converter');
+const big = require("big.js");
 const log = createLogger("restake.log");
 
 const getBalance = async (lcdUrl, address, denom) => {
@@ -23,7 +30,8 @@ const getRewards = async (lcdUrl, address) => {
 const processWallet = async (wallet, network) => {
     let derivationPaths = wallet
         .indexes
-        .map(x => crypto.stringToPath(network.derivationPath + x));
+        .map(x => crypto.stringToPath(network.derivationPath + x.toString()));
+
     let client = await
         getClient(network.rpcUrl, wallet.mnemonic, derivationPaths, network.prefix);
     let addresses = (await client.wallet.getAccounts()).map(addr => addr.address);
@@ -34,6 +42,7 @@ const processWallet = async (wallet, network) => {
     let delegateFee = restakeOpts.delegateFee;
 
     for (let addr of addresses) {
+
         let balance = Number(await getBalance(network.lcdUrl, addr, restakeOpts.denom));
 
         let delegations = await getRewards(network.lcdUrl, addr);
@@ -93,6 +102,96 @@ const processWallet = async (wallet, network) => {
     }
 }
 
+const processEvmosWallet = async (wallet, network) => {
+    let wallets = wallet
+        .indexes
+        .map(index => {
+            let derivationPath = network.derivationPath + index.toString();
+            let ethWallet = Wallet.fromMnemonic(wallet.mnemonic, derivationPath);
+
+            return {
+                address: ethToEvmos(ethWallet.address),
+                wallet: ethWallet
+            };
+        });
+
+    //params section
+    let restakeOpts = network.restakeOptions;
+    let minRestakeAmount = restakeOpts.minRestakeAmount;
+    let restakeDenom = restakeOpts.denom;
+
+    let claimFee = {
+        gas: restakeOpts.claimFee.gas,
+        ...restakeOpts.claimFee.amount[0]
+    }
+    let chain = {
+        chainId: 9001,
+        cosmosChainId: "evmos_9001-2"
+    };
+    let delegatefee = {
+        gas: restakeOpts.delegateFee.gas,
+        ...restakeOpts.delegateFee.amount[0]
+    }
+
+    for (let wallet of wallets) {
+        let addr = wallet.address;
+
+        let delegations = await getRewards(network.lcdUrl, addr);
+        let totalRewards = Number(delegations.reduce((acc, del) =>
+            Number(del.reward.find(rew => rew.denom === restakeDenom)?.amount) + acc, 0));
+
+        if (totalRewards <= minRestakeAmount) {
+            log.info(`restakeJob address ${addr} totalRewards ${totalRewards} < minRestakeAmount ${minRestakeAmount}`);
+            return;
+        }
+
+        let senderOnchainData;
+
+        //claim delegations section
+        for (let del of delegations) {
+            senderOnchainData = await getSenderChaindata(network.lcdUrl, addr);
+            let claimTx = createTxMsgWithdrawDelegatorReward(
+                chain,
+                senderOnchainData,
+                claimFee, "",
+                { validatorAddress: del.validator_address });
+            let signedTx = await signTransaction(wallet.wallet, claimTx);
+            let broadcastRes = await broadcast(signedTx, network.lcdUrl);
+            let claimedAmount = del.reward.find(x => x.denom === restakeDenom)?.amount;
+            if (broadcastRes?.tx_response?.code === 0) 
+                log.info(`restakeJob account ${addr} claimed ${claimedAmount}`);
+            else
+                log.error(`evmos claim error: ${JSON.stringify(broadcastRes)}`);
+
+            await new Promise(res => setTimeout(res, 5000));
+        }
+
+        //delegate section
+        let balance = Number(await getBalance(network.lcdUrl, addr, restakeOpts.denom));
+        let restakeAmount = big(balance).minus(restakeOpts.minWalletBalance).toString();
+
+        let delegateParams = {
+            validatorAddress: delegations[0].validator_address,
+            amount: restakeAmount,
+            denom: restakeDenom
+        }
+
+        senderOnchainData = await getSenderChaindata(network.lcdUrl, addr);
+        let delegateTx = createTxMsgDelegate(chain,
+            senderOnchainData,
+            delegatefee,
+            "",
+            delegateParams);
+        let deledateTxSigned = await signTransaction(wallet.wallet, delegateTx);
+        let broadcastRes = await broadcast(deledateTxSigned, network.lcdUrl);
+        if (broadcastRes?.tx_response?.code === 0)
+            log.info(`restakeJob account ${addr} restaked ${restakeAmount}`);
+        else
+            log.error(`evmos restaking error: ${JSON.stringify(broadcastRes)}`)
+
+    }
+}
+
 const main = async () => {
     let wallets = config.wallets;
     let networks = config.networks;
@@ -103,8 +202,12 @@ const main = async () => {
         log.error("no networks found");
 
     for (let n of networks) {
-        for (let w of wallets)
-            await processWallet(w, n);
+        for (let w of wallets) {
+            if (n.prefix === "evmos")
+                await processEvmosWallet(w, n);
+            else
+                await processWallet(w, n);
+        }
     }
 }
 
