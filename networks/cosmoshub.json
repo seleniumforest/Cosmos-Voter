@@ -1,0 +1,46 @@
+{
+    "lcdUrl": "https://api.cosmos.network/",
+    "rpcUrl": "https://rpc.cosmos.network/",
+    "prefix": "cosmos",
+    "derivationPath": "m/44'/118'/0'/0/",
+    "votingOptions": {
+        "votingFee": {
+            "gas": "250000",
+            "amount": [
+                {
+                    "denom": "uatom",
+                    "amount": "2500"
+                }
+            ]
+        },
+        "predefinedVotes": [
+            {
+                "proposalId": 69,
+                "key": "no_with_veto"
+            }
+        ]
+    },
+    "restakeOptions": {
+        "minRestakeAmount": 500000,
+        "minWalletBalance": 100000,
+        "denom": "uatom",
+        "claimFee": {
+            "gas": "140000",
+            "amount": [
+                {
+                    "denom": "uatom",
+                    "amount": "3500"
+                }
+            ]
+        },
+        "delegateFee": {
+            "gas": "250000",
+            "amount": [
+                {
+                    "denom": "uatom",
+                    "amount": "6250"
+                }
+            ]
+        }
+    }
+}

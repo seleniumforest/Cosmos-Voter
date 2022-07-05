@@ -1,0 +1,40 @@
+{
+    "lcdUrl": "https://lcd-juno.itastakers.com/",
+    "rpcUrl": "https://rpc-juno.itastakers.com/",
+    "prefix": "juno",
+    "derivationPath": "m/44'/118'/0'/0/",
+    "votingOptions": {
+        "votingFee": {
+            "gas": "250000",
+            "amount": [
+                {
+                    "denom": "ujuno",
+                    "amount": "625"
+                }
+            ]
+        }
+    },
+    "restakeOptions": {
+        "minRestakeAmount": 500000,
+        "minWalletBalance": 100000,
+        "denom": "ujuno",
+        "claimFee": {
+            "gas": "280000",
+            "amount": [
+                {
+                    "denom": "ujuno",
+                    "amount": "700"
+                }
+            ]
+        },
+        "delegateFee": {
+            "gas": "250000",
+            "amount": [
+                {
+                    "denom": "ujuno",
+                    "amount": "625"
+                }
+            ]
+        }
+    }
+}

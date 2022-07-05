@@ -1,0 +1,40 @@
+{
+    "lcdUrl": "https://lcd-evmos.keplr.app/",
+    "rpcUrl": "https://rpc-evmos.keplr.app/",
+    "prefix": "evmos",
+    "derivationPath": "m/44'/60'/0'/0/",
+    "votingOptions": {
+        "votingFee": {
+            "gas": "140000",
+            "amount": [
+                {
+                    "denom": "aevmos",
+                    "amount": "3500000000000000"
+                }
+            ]
+        }
+    },
+    "restakeOptions": {
+        "minRestakeAmount": 5000000000000000000,
+        "minWalletBalance": 500000000000000000,
+        "denom": "aevmos",
+        "claimFee": {
+            "gas": "150000",
+            "amount": [
+                {
+                    "denom": "aevmos",
+                    "amount": "3500000000000000"
+                }
+            ]
+        },
+        "delegateFee": {
+            "gas": "250000",
+            "amount": [
+                {
+                    "denom": "aevmos",
+                    "amount": "6250000000000000"
+                }
+            ]
+        }
+    }
+}

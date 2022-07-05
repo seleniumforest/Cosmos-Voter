@@ -29,7 +29,12 @@ const getMostPopularVoteOption = async (network, proposalId) => {
 }
 
 const getPredefinedVoteOption = (network, proposalId) => {
-    let key = network?.predefinedVotes?.find(x => x.proposalId.toString() === proposalId.toString())?.key;
+    let key = network?.
+        votingOptions?.
+        predefinedVotes?.
+        find(x => x.proposalId.toString() === proposalId.toString())?.
+        key;
+        
     if (!key) return;
 
     return { key, option: voteOptions[key] }
@@ -49,7 +54,7 @@ const vote = async (network, signer, proposalId, address) => {
     }
 
     log.info(`trying to vote for prop ${proposalId} - ${voteOption.key} from ${address}`);
-    return await signer.signAndBroadcast(address, [msg], network.votingFee);
+    return await signer.signAndBroadcast(address, [msg], network?.votingOptions?.votingFee);
 }
 
 const processWallet = async (wallet, network, proposals) => {
@@ -79,8 +84,8 @@ const processWallet = async (wallet, network, proposals) => {
 
 const main = async () => {
     let wallets = config.wallets;
-    let networks = config.networks;
-
+    let networks = config.networks.map(x => require(x));
+debugger;
     if (!(wallets instanceof Array) || wallets.length === 0)
         log.error("no wallets found");
     if (!(networks instanceof Array) || networks.length === 0)
