@@ -158,7 +158,7 @@ const processEvmosWallet = async (wallet, network) => {
             let signedTx = await signTransaction(wallet.wallet, claimTx);
             let broadcastRes = await broadcast(signedTx, network.lcdUrl);
             let claimedAmount = del.reward.find(x => x.denom === restakeDenom)?.amount;
-            if (broadcastRes?.tx_response?.code === 0) 
+            if (broadcastRes?.tx_response?.code === 0)
                 log.info(`restakeJob account ${addr} claimed ${claimedAmount}`);
             else
                 log.error(`evmos claim error: ${JSON.stringify(broadcastRes)}`);
@@ -194,19 +194,24 @@ const processEvmosWallet = async (wallet, network) => {
 
 const main = async () => {
     let wallets = config.wallets;
-    let networks = config.networks;
+    let networks = config.networks.map(x => require(x));;
 
     if (!(wallets instanceof Array) || wallets.length === 0)
         log.error("no wallets found");
     if (!(networks instanceof Array) || networks.length === 0)
         log.error("no networks found");
 
-    for (let n of networks) {
-        for (let w of wallets) {
-            if (n.prefix === "evmos")
-                await processEvmosWallet(w, n);
-            else
-                await processWallet(w, n);
+    for (let network of networks) {
+        try {
+            for (let w of wallets) {
+                if (network.prefix === "evmos")
+                    await processEvmosWallet(w, network);
+                else
+                    await processWallet(w, network);
+            }
+        }
+        catch (e) {
+            log.error(e);
         }
     }
 }
