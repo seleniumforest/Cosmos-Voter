@@ -13,6 +13,8 @@ or to run all the jobs ``` npm run runall  ```
 
 # todo
 
+[WIP] fix evmos errors
+
 [x] dont check proposals multiple times for every wallet
 
 make logs prettier
