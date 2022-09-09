@@ -5,13 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "voter",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/src/restakeJob.js"
+            "program": "${workspaceFolder}/src/voter.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "restake",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/restake.js"
         }
     ]
 }

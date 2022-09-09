@@ -1,6 +1,6 @@
 {
-    "lcdUrl": "https://api.cosmos.network/",
-    "rpcUrl": "https://rpc.cosmos.network/",
+    "rpcUrl": "https://rpc-cosmoshub.whispernode.com/",
+    "lcdUrl": "https://lcd-cosmoshub.whispernode.com/",
     "prefix": "cosmos",
     "derivationPath": "m/44'/118'/0'/0/",
     "votingOptions": {

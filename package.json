@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "runall": "node src/voterJob & node src/restakeJob"
+    "runall": "node src/voter & node src/restake"
   },
   "author": "",
   "license": "ISC",
@@ -16,9 +16,9 @@
     "@hanchon/evmos-ts-wallet": "^0.1.1",
     "axios": "^0.26.1",
     "big.js": "^6.2.0",
+    "co": "^4.6.0",
     "evmosjs": "^0.2.7",
     "long": "^5.2.0",
-    "moment": "^2.29.2",
-    "simple-node-logger": "^21.8.12"
+    "moment": "^2.29.2"
   }
 }

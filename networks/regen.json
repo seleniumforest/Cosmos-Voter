@@ -1,6 +1,6 @@
 {
-    "lcdUrl": "https://lcd-regen.keplr.app/",
-    "rpcUrl": "https://rpc-regen.keplr.app/",
+    "lcdUrl": "https://rest-regen.ecostake.com/",
+    "rpcUrl": "https://rpc-regen.ecostake.com/",
     "prefix": "regen",
     "derivationPath": "m/44'/118'/0'/0/",
     "votingOptions": {

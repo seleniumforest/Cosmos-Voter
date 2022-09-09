@@ -1,6 +1,6 @@
 {
-    "lcdUrl": "http://osmosis.strange.love:1317/",
-    "rpcUrl": "http://osmosis.strange.love:26657/",
+    "rpcUrl": "https://rpc-osmosis.ecostake.com/",
+    "lcdUrl": "https://rest-osmosis.ecostake.com/",
     "prefix": "osmo",
     "derivationPath": "m/44'/118'/0'/0/",
     "votingOptions": {
