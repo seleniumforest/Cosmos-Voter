@@ -9,11 +9,11 @@ Run ``` npm install ```
 
 and then ``` node src/jobYouNeed.js ```
 
-or to run all the jobs ``` npm run runall  ```
+or to run all the jobs ``` npm run runall  ``` or ``` pm2 start ecosystem.config.js  ```
 
 # todo
 
-[WIP] fix evmos errors
+[x] fix evmos errors
 
 [x] dont check proposals multiple times for every wallet
 
@@ -23,9 +23,9 @@ make logs prettier
 
 [started] refactor - split script into multiple files
 
-add networks - [x] cosmoshub, [x] juno, [x] secret, terra, [x] evmos
+add networks - [x] cosmoshub, [x] juno, [x] secret, terra, [x] evmos, stars
 
-feature to create multiaccounts
+feature to harvest rewards to one account
 
 feature to restake from jailed or inactive validators for a long time
 
