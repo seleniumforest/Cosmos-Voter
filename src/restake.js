@@ -1,28 +1,37 @@
-const axios = require("axios");
 const crypto = require("@cosmjs/crypto");
 const stargate = require("@cosmjs/stargate");
-const { getClient, getConfig, getRewards, getBalance, intervals } = require("./helpers");
+const { getClient, getConfig, getRewards, getBalance, intervals, shortAddress } = require("./helpers");
 const { MsgWithdrawDelegatorReward } = require("cosmjs-types/cosmos/distribution/v1beta1/tx");
 const { MsgDelegate } = require("cosmjs-types/cosmos/staking/v1beta1/tx");
 const { processEvmosWallet } = require("./restakeEvmos");
 const config = getConfig();
 
-const claim = async (network, client, addr, claimFee, restakeDenom, minRestakeAmount) => {
+const claim = async (network, client, addr) => {
+    let {
+        minRestakeAmount,
+        claimFee,
+        denom: restakeDenom
+    } = network.restakeOptions;
+
     let delegations = await getRewards(network.lcdUrl, addr);
     let totalRewards = delegations.reduce((acc, del) =>
         Number(del.reward.find(rew => rew.denom === restakeDenom)?.amount) + acc, 0);
 
     if (totalRewards <= minRestakeAmount) {
-        console.log(`restakeJob address ${addr} totalRewards ${totalRewards} < minRestakeAmount ${minRestakeAmount}`);
+        console.log([
+            `restakeJob ${shortAddress(addr)}`,
+            ` totalRewards ${totalRewards.toFixed(2)} < minRestakeAmount ${minRestakeAmount}`
+        ].join(''));
         return;
     }
 
+    let feeAmount = claimFee.amount.find(am => am.denom === restakeDenom).amount;
     let totalClaimFee = {
-        gas: (Number(claimFee.gas) * delegations.length).toString(),
+        gas: (claimFee.gas * delegations.length).toString(),
         amount: [
             {
                 denom: restakeDenom,
-                amount: (Number(claimFee.amount.find(am => am.denom === restakeDenom).amount) * delegations.length).toString()
+                amount: (feeAmount * delegations.length).toString()
             }
         ]
     };
@@ -38,14 +47,20 @@ const claim = async (network, client, addr, claimFee, restakeDenom, minRestakeAm
     let claimResult = await client.signer.signAndBroadcast(addr, claimmsgs, totalClaimFee);
     stargate.assertIsDeliverTxSuccess(claimResult);
 
-    console.log(`restakeJob account ${addr} claimed ${totalRewards}`);
+    console.log(`restakeJob ${shortAddress(addr)} claimed ${totalRewards.toFixed(2)}`);
     return {
         totalRewards,
         validator: delegations[0].validator_address
     };
 }
 
-const stake = async (network, client, addr, delegateFee, restakeDenom, minWalletBalance, totalRewards, validator) => {
+const stake = async (network, client, addr, validator) => {
+    let {
+        delegateFee,
+        denom: restakeDenom,
+        minWalletBalance
+    } = network.restakeOptions;
+
     let balance = Number(await getBalance(network.lcdUrl, addr, restakeDenom));
 
     let restakeAmount = balance - minWalletBalance;
@@ -69,7 +84,7 @@ const stake = async (network, client, addr, delegateFee, restakeDenom, minWallet
     stargate.assertIsDeliverTxSuccess(
         await client.signer.signAndBroadcast(addr, [restakeMsg], delegateFee));
 
-    console.log(`restakeJob account ${addr} restaked ${restakeAmount}`);
+    console.log(`restakeJob ${shortAddress(addr)} restaked ${restakeAmount.toFixed(2)}`);
 }
 
 const processWallet = async (wallet, network) => {
@@ -79,41 +94,30 @@ const processWallet = async (wallet, network) => {
     let client = await getClient(network.rpcUrl, wallet.mnemonic, derivationPaths, network.prefix);
     let addresses = await client.wallet.getAccounts();
 
-    let {
-        minRestakeAmount,
-        denom: restakeDenom,
-        claimFee,
-        delegateFee,
-        minWalletBalance
-    } = network.restakeOptions;
-
-    for (let addr of addresses.map(addr => addr.address)) {
+    for (let { address } of addresses) {
         try {
-            let clamed = await claim(network, client, addr, claimFee, restakeDenom, minRestakeAmount);
-            if (!clamed)
+            let claimed = await claim(network, client, address);
+            if (!claimed)
                 continue;
-            await stake(network, client, addr, delegateFee, restakeDenom, minWalletBalance, clamed.totalRewards, clamed.validator);
+
+            await stake(network, client, address, claimed.validator);
         }
-        catch (err) { console.error(err?.message )}
+        catch (err) { console.error(err?.message) }
     }
 }
 
-let main = async () => {
+const main = () => {
     console.log(`${new Date().toLocaleString()} Running restake job`);
 
-    for (let network of config.networks) {
-        try {
-            for (let w of config.wallets) {
-                if (network.prefix === "evmos")
-                    await processEvmosWallet(w, network);
-                else
-                    await processWallet(w, network);
-            }
-        }
-        catch (e) {
-            console.error(e);
-        }
-    }
+    Promise.all(config.networks.flatMap(network => {
+        return config.wallets.map(w => {
+            if (network.prefix === "evmos")
+                return processEvmosWallet(w, network);
+            else
+                return processWallet(w, network);
+        })
+    })).then(() => console.log("finished"));
 };
+
 main();
 setInterval(main, intervals.day);

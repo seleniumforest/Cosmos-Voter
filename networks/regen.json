@@ -5,11 +5,11 @@
     "derivationPath": "m/44'/118'/0'/0/",
     "votingOptions": {
         "votingFee": {
-            "gas": "200000",
+            "gas": 200000,
             "amount": [
                 {
                     "denom": "uregen",
-                    "amount": "5000"
+                    "amount": 5000
                 }
             ]
         }
@@ -19,20 +19,20 @@
         "minWalletBalance": 100000,
         "denom": "uregen",
         "claimFee": {
-            "gas": "200000",
+            "gas": 200000,
             "amount": [
                 {
                     "denom": "uregen",
-                    "amount": "5000"
+                    "amount": 5000
                 }
             ]
         },
         "delegateFee": {
-            "gas": "300000",
+            "gas": 300000,
             "amount": [
                 {
                     "denom": "uregen",
-                    "amount": "7500"
+                    "amount": 7500
                 }
             ]
         }

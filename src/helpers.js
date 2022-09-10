@@ -30,7 +30,7 @@ exports.getSenderChaindata = async (url, address) => {
         `${url}${generateEndpointAccount(address)}`,
         options
     );
-    
+
     let baseAcc = addrRaw.data.account.base_account;
     return {
         accountAddress: baseAcc.address,
@@ -59,11 +59,14 @@ exports.getRewards = async (lcdUrl, address) => {
     return rewards;
 }
 
+exports.shortAddress = (addr, start = 9, end = 4) =>
+    `${addr.slice(0, start)}...${addr.slice(addr.length - end, addr.length)}`;
+
 let minute = 1000 * 60;
 let hour = minute * 60;
 let day = hour * 24;
 exports.intervals = {
-    minute, 
+    minute,
     hour,
     day
 }

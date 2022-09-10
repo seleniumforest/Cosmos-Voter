@@ -5,11 +5,11 @@
     "derivationPath": "m/44'/60'/0'/0/",
     "votingOptions": {
         "votingFee": {
-            "gas": "140000",
+            "gas": 140000,
             "amount": [
                 {
                     "denom": "aevmos",
-                    "amount": "3500000000000000"
+                    "amount": 3500000000000000
                 }
             ]
         }
@@ -19,20 +19,20 @@
         "minWalletBalance": 500000000000000000,
         "denom": "aevmos",
         "claimFee": {
-            "gas": "200000",
+            "gas": 200000,
             "amount": [
                 {
                     "denom": "aevmos",
-                    "amount": "4000000000000000"
+                    "amount": 4000000000000000
                 }
             ]
         },
         "delegateFee": {
-            "gas": "250000",
+            "gas": 250000,
             "amount": [
                 {
                     "denom": "aevmos",
-                    "amount": "6250000000000000"
+                    "amount": 6250000000000000
                 }
             ]
         }
