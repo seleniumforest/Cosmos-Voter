@@ -25,20 +25,20 @@
         "minWalletBalance": 100000,
         "denom": "uatom",
         "claimFee": {
-            "gas": 140000,
+            "gas": "140000",
             "amount": [
                 {
                     "denom": "uatom",
-                    "amount": 3500
+                    "amount": "3500"
                 }
             ]
         },
         "delegateFee": {
-            "gas": 250000,
+            "gas": "250000",
             "amount": [
                 {
                     "denom": "uatom",
-                    "amount": 6250
+                    "amount": "6250"
                 }
             ]
         }

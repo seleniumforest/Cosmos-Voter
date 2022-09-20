@@ -9,7 +9,7 @@
             "amount": [
                 {
                     "denom": "uosmo",
-                    "amount": 6250
+                    "amount": "6250"
                 }
             ]
         }
@@ -19,20 +19,20 @@
         "minWalletBalance": 100000,
         "denom": "uosmo",
         "claimFee": {
-            "gas": 250000,
+            "gas": "250000",
             "amount": [
                 {
                     "denom": "uosmo",
-                    "amount": 6250
+                    "amount": "6250"
                 }
             ]
         },
         "delegateFee": {
-            "gas": 300000,
+            "gas": "300000",
             "amount": [
                 {
                     "denom": "uosmo",
-                    "amount": 7500
+                    "amount": "7500"
                 }
             ]
         }

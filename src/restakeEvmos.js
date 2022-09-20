@@ -71,7 +71,7 @@ exports.processEvmosWallet = async (wallet, network) => {
             let broadcastRes = await broadcast(signedTx, network.lcdUrl);
             let claimedAmount = del.reward.find(x => x.denom === restakeDenom)?.amount;
             if (broadcastRes?.tx_response?.code === 0)
-                console.log(`restakeJob account ${shortAddress(addr)} claimed ${claimedAmount.toFixed(2)}`);
+                console.log(`restakeJob account ${shortAddress(addr)} claimed ${new Big(claimedAmount).toFixed(2)}`);
             else
                 console.error(`evmos claim error: ${JSON.stringify(broadcastRes)}`);
 
