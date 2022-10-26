@@ -7,11 +7,21 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "test",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/test.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "voter",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/src/voter.js"
+            "program": "${workspaceFolder}/src/voter.ts",
+            "runtimeExecutable": "ts-node"
         },
         {
             "type": "node",

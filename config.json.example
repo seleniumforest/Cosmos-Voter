@@ -17,10 +17,86 @@
         }
     ],
     "networks": [
-        "../networks/cosmoshub.json",
-        "../networks/evmos.json",
-        "../networks/juno.json",
-        "../networks/osmosis.json",
-        "../networks/regen.json"
+        {
+            "prefix": "cosmos",
+            "name": "cosmoshub",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingOptions": {
+                "votingFee": ["250000", "uatom", "2500"],
+                "predefinedVotes": [
+                    {
+                        "proposalId": "69",
+                        "option": "no_with_veto"
+                    }
+                ]
+            },
+            "restakeOptions": {
+                "minRestakeAmount": "500000",
+                "minWalletBalance": "100000",
+                "denom": "uatom",
+                "claimFee": ["140000", "uatom", "3500"],
+                "delegateFee": ["250000", "uatom", "2500"]
+            }
+        },
+        {
+            "prefix": "osmo",
+            "name": "osmosis",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingOptions": {
+                "votingFee": ["250000", "uosmo", "6250"]
+            },
+            "restakeOptions": {
+                "minRestakeAmount": "500000",
+                "minWalletBalance": "100000",
+                "denom": "uosmo",
+                "claimFee": ["250000", "uosmo", "6500"],
+                "delegateFee": ["250000", "uosmo", "7500"]
+            }
+        },
+        {
+            "prefix": "juno",
+            "name": "juno",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingOptions": {
+                "votingFee": ["250000", "ujuno", "625"]
+            },
+            "restakeOptions": {
+                "minRestakeAmount": "500000",
+                "minWalletBalance": "100000",
+                "denom": "ujuno",
+                "claimFee": ["280000", "ujuno", "700"],
+                "delegateFee": ["250000", "ujuno", "625"]
+            }
+        },
+        {
+            "prefix": "regen",
+            "name": "regen",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingOptions": {
+                "votingFee": ["200000", "uregen", "5000"]
+            },
+            "restakeOptions": {
+                "minRestakeAmount": "500000",
+                "minWalletBalance": "100000",
+                "denom": "uregen",
+                "claimFee": ["200000", "uregen", "5000"],
+                "delegateFee": ["300000", "uregen", "7500"]
+            }
+        },
+        {
+            "prefix": "evmos",
+            "name": "evmos",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingOptions": {
+                "votingFee": ["250000", "aevmos", "6250000000000000"]
+            },
+            "restakeOptions": {
+                "minRestakeAmount": "500000",
+                "minWalletBalance": "100000",
+                "denom": "uregen",
+                "claimFee": ["250000", "aevmos", "6250000000000000"],
+                "delegateFee": ["250000", "aevmos", "6250000000000000"]
+            }
+        }
     ]
 }
