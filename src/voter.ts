@@ -1,6 +1,5 @@
 import Long from "long";
 import { ApiManager, Proposal } from "./api/apiManager";
-import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 import { stringToPath } from "@cosmjs/crypto";
 
 import { Network } from "./api/constants";
@@ -8,15 +7,8 @@ import { EndpointType } from "./api/networkManager";
 import { getConfig, NetworkConfig, toFeeObject, Vote, VoteOption, Wallet } from "./config";
 
 import moment from "moment";
-import { DirectSecp256k1HdWallet as HdWallet, Registry } from "@cosmjs/proto-signing";
-import getPredefinedVoteOption from "./helpers";
-
-const getSigner = async (endpoint: string, wallet: HdWallet) =>
-    await SigningStargateClient.connectWithSigner(
-        endpoint,
-        wallet,
-        { registry: new Registry(defaultRegistryTypes) }
-    );
+import { DirectSecp256k1HdWallet as HdWallet } from "@cosmjs/proto-signing";
+import getPredefinedVoteOption, { getSigner, Intervals } from "./helpers";
 
 const getMostPopularVoteOption = async (apiManager: ApiManager, proposalId: string): Promise<Vote | undefined> => {
     let tally = await apiManager.getVoteTally(proposalId);
@@ -30,7 +22,6 @@ const getMostPopularVoteOption = async (apiManager: ApiManager, proposalId: stri
 }
 
 const vote = async (prop: Proposal, addr: string, apiManager: ApiManager, wallet: HdWallet, network: NetworkConfig) => {
-    debugger;
     let endpoints = apiManager.manager.getEndpoints(EndpointType.RPC);
     let voteOption = (getPredefinedVoteOption(network, prop.proposal_id) ||
         await getMostPopularVoteOption(apiManager, prop.proposal_id))!;
@@ -109,4 +100,4 @@ const main = async () => {
 };
 
 main();
-//setInterval(main, Intervals.minute);
+setInterval(main, Intervals.hour);

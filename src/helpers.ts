@@ -1,4 +1,16 @@
+import { Registry, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { defaultRegistryTypes, GasPrice, SigningStargateClient } from "@cosmjs/stargate";
 import { NetworkConfig, Vote } from "./config";
+
+export const getSigner = async (endpoint: string, wallet: DirectSecp256k1HdWallet) =>
+    await SigningStargateClient.connectWithSigner(
+        endpoint,
+        wallet,
+        { registry: new Registry(defaultRegistryTypes) }
+    );
+
+export const shortAddress = (addr: string, start = 9, end = 4) =>
+    `${addr.slice(0, start)}...${addr.slice(addr.length - end, addr.length)}`;
 
 export enum VoteOption {
     yes = 1,

@@ -30,7 +30,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/src/restake.js"
+            "program": "${workspaceFolder}/src/restake.ts",
+            "runtimeExecutable": "ts-node"
         }
     ]
 }

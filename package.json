@@ -16,15 +16,18 @@
     "@hanchon/evmos-ts-wallet": "^0.1.1",
     "@tharsis/provider": "^0.2.4",
     "axios": "^0.26.1",
-    "big.js": "^6.2.0",
+    "big.js": "^6.2.1",
+    "chain-registry": "^0.6.3",
     "co": "^4.6.0",
+    "eventemitter3": "^4.0.7",
     "evmosjs": "^0.2.10",
     "long": "^5.2.0",
     "moment": "^2.29.2",
-    "chain-registry": "^0.6.3",
-    "eventemitter3": "^4.0.7",
     "node-cache": "^5.1.2",
     "ts-node": "^10.9.1",
     "yargs": "^17.5.1"
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.1.6"
   }
 }

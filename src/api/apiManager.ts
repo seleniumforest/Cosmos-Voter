@@ -3,6 +3,7 @@ import { EndpointType, NetworkManager } from "./networkManager";
 import { Int53 } from "@cosmjs/math";
 import { defaultRegistryUrls, Network } from "./constants";
 import { URL } from "url";
+import { Coin } from "@cosmjs/proto-signing";
 
 export class ApiManager {
     readonly manager: NetworkManager;
@@ -13,6 +14,18 @@ export class ApiManager {
 
     static async createApiManager(network: Network, registryUrls: URL[] = defaultRegistryUrls) {
         return new ApiManager(await NetworkManager.create(network, registryUrls));
+    }
+
+    async getRewards(address: string): Promise<Reward[]> {
+        let endpoints = this.manager.getEndpoints(EndpointType.REST);
+
+        for (const rest of endpoints) {
+            let rewardsUrl = `${rest}/cosmos/distribution/v1beta1/delegators/${address}/rewards`;
+            let result = await axios.get<Rewards>(rewardsUrl)
+            return result.data.rewards;
+        }
+
+        return [];
     }
 
     async getActiveProposals(): Promise<Proposal[] | null> {
@@ -36,6 +49,18 @@ export class ApiManager {
 
         console.error(`error fetching proposals with endp set ${endpoints}`)
         return null;
+    }
+
+    async getBalance(address: string, denom: string): Promise<string | undefined> {
+        let endpoints = this.manager.getEndpoints(EndpointType.REST);
+
+        for (let endpoint of endpoints) {
+            try {
+                let balanceUrl = `${endpoint}/cosmos/bank/v1beta1/balances/${address}`;
+                let { data: { balances } } = await axios.get<{ balances: Coin[] }>(balanceUrl);
+                return balances?.find(x => x.denom === denom)?.amount;
+            } catch (err: any) { console.log(err?.message) }
+        }
     }
 
     async getVoteTally(propId: number | string): Promise<TallyResult | null> {
@@ -249,6 +274,13 @@ export interface BlockHeader {
     time: Date,
     hash: string
 }
+
+export interface Reward {
+    validator_address: string,
+    reward: Coin[]
+}
+
+export interface Rewards { rewards: Reward[] }
 
 interface RawTx {
     tx?: string;
