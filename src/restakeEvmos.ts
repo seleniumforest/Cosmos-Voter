@@ -1,19 +1,22 @@
-const { Wallet } = require("@ethersproject/wallet");
-const { createTxMsgWithdrawDelegatorReward, createTxMsgDelegate } = require("@tharsis/transactions");
-const {
+import { Wallet as EvmosWallet } from "@ethersproject/wallet";
+import { createTxMsgWithdrawDelegatorReward, createTxMsgDelegate } from "@tharsis/transactions";
+import {
     broadcast,
     signTransaction,
-} = require("@hanchon/evmos-ts-wallet");
-const { ethToEvmos } = require('@tharsis/address-converter');
-const { Big } = require("big.js");
-const { getSenderChaindata, getRewards, getBalance, shortAddress } = require("./helpers");
+} from "@hanchon/evmos-ts-wallet";
+import { ethToEvmos } from '@tharsis/address-converter';
+import { Big } from "big.js";
+import { shortAddress } from "./helpers";
+import { NetworkConfig, toEvmosFee, toFeeObject, Wallet } from "./config";
+import { ApiManager } from "./api/apiManager";
+import big from "big.js";
 
-exports.processEvmosWallet = async (wallet, network) => {
+export const processEvmosWallet = async (network: NetworkConfig, wallet: Wallet, apiManager: ApiManager) => {
     let wallets = wallet
         .indexes
         .map(index => {
             let derivationPath = network.derivationPath + index.toString();
-            let ethWallet = Wallet.fromMnemonic(wallet.mnemonic, derivationPath);
+            let ethWallet = EvmosWallet.fromMnemonic(wallet.mnemonic, derivationPath);
 
             return {
                 address: ethToEvmos(ethWallet.address),
@@ -25,32 +28,26 @@ exports.processEvmosWallet = async (wallet, network) => {
     let restakeOpts = network.restakeOptions;
     let minRestakeAmount = new Big(restakeOpts.minRestakeAmount);
     let restakeDenom = restakeOpts.denom;
+    let claimFee = toEvmosFee(restakeOpts.claimFee);
 
-    let claimFee = {
-        gas: restakeOpts.claimFee.gas,
-        ...restakeOpts.claimFee.amount[0]
-    }
     let chain = {
         chainId: 9001,
         cosmosChainId: "evmos_9001-2"
     };
-    let delegatefee = {
-        gas: restakeOpts.delegateFee.gas,
-        ...restakeOpts.delegateFee.amount[0]
-    }
+
+    let delegatefee = toEvmosFee(restakeOpts.delegateFee);
 
     for (let wallet of wallets) {
         let addr = wallet.address;
-
-        let delegations = await getRewards(network.lcdUrl, addr);
+        let delegations = await apiManager.getRewards(addr);
         let totalRewards = delegations.reduce((acc, del) => {
             let amount = del.reward.find(rew => rew.denom === restakeDenom)?.amount;
             //if !amount then redelegate to another validator
             if (!amount)
                 return acc;
 
-            return new Big(amount).plus(acc);
-        }, new Big(0));
+            return big(amount).plus(acc)
+        }, big(0));
 
         if (totalRewards.lte(minRestakeAmount)) {
             console.log(`restakeJob address ${shortAddress(addr)} totalRewards ${totalRewards.toFixed(2)} < minRestakeAmount ${minRestakeAmount}`);
@@ -61,16 +58,20 @@ exports.processEvmosWallet = async (wallet, network) => {
 
         //claim delegations section
         for (let del of delegations) {
-            senderOnchainData = await getSenderChaindata(network.lcdUrl, addr);
+            senderOnchainData = await apiManager.getSenderChaindata(addr);
             let claimTx = createTxMsgWithdrawDelegatorReward(
                 chain,
                 senderOnchainData,
-                claimFee, "",
+                claimFee, 
+                "",
                 { validatorAddress: del.validator_address });
             let signedTx = await signTransaction(wallet.wallet, claimTx);
-            let broadcastRes = await broadcast(signedTx, network.lcdUrl);
-            let claimedAmount = del.reward.find(x => x.denom === restakeDenom)?.amount;
-            if (broadcastRes?.tx_response?.code === 0)
+            let broadcastRes = await apiManager.broadcastTx(JSON.parse(signedTx).tx_bytes);
+            let claimedAmount = del.reward.find(x => x.denom === restakeDenom)?.amount!;
+            if (!claimedAmount)
+                continue;
+
+            if (broadcastRes.code === 0)
                 console.log(`restakeJob account ${shortAddress(addr)} claimed ${new Big(claimedAmount).toFixed(2)}`);
             else
                 console.error(`evmos claim error: ${JSON.stringify(broadcastRes)}`);
@@ -79,7 +80,11 @@ exports.processEvmosWallet = async (wallet, network) => {
         }
 
         //delegate section
-        let balance = new Big(await getBalance(network.lcdUrl, addr, restakeOpts.denom));
+        let balanceAfterClaim = await apiManager.getBalance(addr, restakeDenom);
+        if (!balanceAfterClaim)
+            Promise.reject(`Cannot get balance on ${addr}`);
+
+        let balance = new Big(balanceAfterClaim || 0);
         let restakeAmount = balance.minus(new Big(restakeOpts.minWalletBalance));
 
         let delegateParams = {
@@ -88,18 +93,18 @@ exports.processEvmosWallet = async (wallet, network) => {
             denom: restakeDenom
         }
 
-        senderOnchainData = await getSenderChaindata(network.lcdUrl, addr);
+        senderOnchainData = await apiManager.getSenderChaindata(addr);
         let delegateTx = createTxMsgDelegate(chain,
             senderOnchainData,
             delegatefee,
             "",
             delegateParams);
         let deledateTxSigned = await signTransaction(wallet.wallet, delegateTx);
-        let broadcastRes = await broadcast(deledateTxSigned, network.lcdUrl);
-        if (broadcastRes?.tx_response?.code === 0)
+        let broadcastRes = await apiManager.broadcastTx(JSON.parse(deledateTxSigned).tx_bytes);
+        if (broadcastRes.code === 0)
             console.log(`restakeJob account ${shortAddress(addr)} restaked ${restakeAmount.toFixed(2)}`);
         else
-            console.error(`evmos restaking error: ${JSON.stringify(broadcastRes)}`)
+            console.error(`evmos restaking error code: ${broadcastRes.code}`)
 
     }
 }

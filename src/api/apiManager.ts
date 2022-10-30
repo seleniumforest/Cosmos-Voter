@@ -4,6 +4,8 @@ import { Int53 } from "@cosmjs/math";
 import { defaultRegistryUrls, Network } from "./constants";
 import { URL } from "url";
 import { Coin } from "@cosmjs/proto-signing";
+import { AccountResponse } from "@tharsis/provider";
+import { DeliverTxResponse, StargateClient } from "@cosmjs/stargate";
 
 export class ApiManager {
     readonly manager: NetworkManager;
@@ -14,6 +16,27 @@ export class ApiManager {
 
     static async createApiManager(network: Network, registryUrls: URL[] = defaultRegistryUrls) {
         return new ApiManager(await NetworkManager.create(network, registryUrls));
+    }
+
+    async getSenderChaindata(addr: string): Promise<any> {
+        const options = {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        };
+
+        let endpoints = this.manager.getEndpoints(EndpointType.REST);
+        for (const endp of endpoints) {
+            let { data: { account: { base_account } } } = await axios.get<AccountResponse>(
+                `${endp}/cosmos/auth/v1beta1/accounts/${addr}`
+            );
+
+            return {
+                accountAddress: base_account.address,
+                sequence: base_account.sequence,
+                accountNumber: base_account.account_number,
+                pubkey: base_account.pub_key?.key
+            };
+        }
     }
 
     async getRewards(address: string): Promise<Reward[]> {
@@ -78,19 +101,36 @@ export class ApiManager {
         return null;
     }
 
-    async broadcastTx(bytes: string, mode: string = "BROADCAST_MODE_BLOCK"): Promise<boolean> {
-        let endpoints = this.manager.getEndpoints(EndpointType.REST);
+    async broadcastTx(bytes: Uint8Array, mode: string = "BROADCAST_MODE_BLOCK"): Promise<DeliverTxResponse> {
+        let endpoints = this.manager.getEndpoints(EndpointType.RPC);
 
-        for (const rest of endpoints) {
+        for (const rpc of endpoints) {
             try {
-                let url = rest + `/cosmos/tx/v1beta1/txs`;
-                let { data } = await axios.post<{ tx_response: { height: number } }>(url, { tx_bytes: bytes, mode });
-                return data.tx_response.height > 0;
-            } catch (err) { console.warn(`cannot broadcast tx to ${rest}`) }
-        }
 
-        console.error(`error broadcasting tx with endp set ${endpoints}`)
-        return false;
+                // let { data: broadcastResult } = await axios.post<CheckTx>(
+                //     rpc + `/broadcast_tx_sync`, 
+                //     JSON.parse(bytes));
+
+                // let isTxIncluded = false;
+                // let attempts = 0;
+                // do {
+                //     let { data: searchResult } = await axios.get<{ result: { height: number }}>(rpc + `/tx`);
+                //     if (searchResult.result.height > 0)
+                //         return 0;
+
+                // } while (!isTxIncluded && attempts < 5)
+                    
+                // if (data.tx_response.height > 0) 
+                //     return data.tx_response.code; 
+
+                let client = await StargateClient.connect(rpc);
+                let result = await client.broadcastTx(bytes, 5000);
+                debugger;
+                return result;
+            } catch (err) { console.warn(`cannot broadcast tx to ${rpc}`) }
+        }
+        
+        return Promise.reject(`error broadcasting tx with endp set ${endpoints}`);
     }
 
     async getLatestHeight(lastKnownHeight: number = 0): Promise<number> {
@@ -216,6 +256,13 @@ export class ApiManager {
 
         return [];
     }
+}
+
+export interface AccountInfo {
+    accountAddress: string,
+    sequence: string,
+    accountNumber: string,
+    pubkey: string
 }
 
 interface ProposalsDTO {

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "runall": "node src/voter & node src/restake"
+    "runall": "ts-node src/voter.ts & ts-node src/restake.ts"
   },
   "author": "",
   "license": "ISC",

@@ -49,27 +49,27 @@ export class NetworkManager {
                     url: `${url}/status`,
                     timeout: 5000
                 });
+
+                if (!response || response.status !== 200)
+                    return;
+
+                let blockTime = Date.parse(response.data.result.sync_info.latest_block_time);
+                let blockHeight = parseInt(response.data.result.sync_info.latest_block_height);
+                let now = Date.now();
+
+                if (Math.abs(now - blockTime) < 60000) {
+                    console.log(`${url} is alive, sync block ${blockHeight}`);
+                    return url;
+                }
+
+                console.log(`${url} is alive, but not synced`);
+                return;
             } catch (_) {
                 console.log(`${url} is dead`)
             }
-
-            if (!response || response.status !== 200)
-                return;
-
-            let blockTime = Date.parse(response.data.result.sync_info.latest_block_time);
-            let blockHeight = parseInt(response.data.result.sync_info.latest_block_height);
-            let now = Date.now();
-
-            if (Math.abs(now - blockTime) < 60000) {
-                console.log(`${url} is alive, sync block ${blockHeight}`);
-                return url;
-            }
-
-            console.log(`${url} is alive, but not synced`);
-            return;
         }));
 
-        return alive.filter((x) : x is URL => !!x);
+        return alive.filter((x): x is URL => !!x);
     }
 
     static async filterAliveRest(urls: URL[]): Promise<URL[]> {
@@ -104,7 +104,7 @@ export class NetworkManager {
             return;
         }));
 
-        return alive.filter((x) : x is URL => !!x);
+        return alive.filter((x): x is URL => !!x);
     }
 
     static async fetchChainsData(registryUrls: URL[], chain: Network): Promise<Chain> {
@@ -130,7 +130,7 @@ export class NetworkManager {
 
         if (!endp)
             throw Error(`Endpoint ${endpoint} doesnt exist`);
-        
+
         let el = endp.find(x => x.endpoint === endpoint)!;
         result ? ++el.ok : --el.fail;
     }

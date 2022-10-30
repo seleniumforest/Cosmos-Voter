@@ -9,6 +9,7 @@ import big from "big.js";
 import { EndpointType } from "./api/networkManager";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgDelegate } from "cosmjs-types/cosmos/staking/v1beta1/tx";
+import { processEvmosWallet } from "./restakeEvmos";
 
 const claim = async (network: NetworkConfig, address: string, manager: ApiManager, wallet: HdWallet) => {
     let {
@@ -130,11 +131,13 @@ const main = async () => {
 
         for (let wallet of config.wallets) {
             if (network.name === Network.EVMOS)
-                continue;
+                await processEvmosWallet(network, wallet, apiManager);
             else
                 await processWallet(network, wallet, apiManager);
         }
     }
+
+    console.log("finished");
 };
 
 main();

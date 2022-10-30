@@ -1,4 +1,5 @@
 import { coin, StdFee } from "@cosmjs/stargate";
+import { Fee as EvmosFee } from "@tharsis/transactions";
 
 export const getConfig = async (): Promise<AppConfig> => {
     let config = await import("../config.json");
@@ -33,7 +34,15 @@ export type Wallet = {
 
 export type Fee = [gas: string, denom: string, amount: string];
 
-export const toFeeObject = (fee: Fee): StdFee  => {
+export const toEvmosFee = (fee: Fee): EvmosFee => {
+    return {
+        gas: fee[0],
+        amount: fee[2],
+        denom: fee[1]
+    }
+}
+
+export const toFeeObject = (fee: Fee): StdFee => {
     return {
         gas: fee[0],
         amount: [coin(fee[2], fee[1])]
@@ -47,8 +56,8 @@ export enum VoteOption {
     no_with_veto = 4
 }
 
-export type Vote = { 
-    proposalId: string, 
+export type Vote = {
+    proposalId: string,
     option: VoteOption
 }
 
