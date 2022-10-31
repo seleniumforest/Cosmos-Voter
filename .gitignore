@@ -2,6 +2,7 @@
 
 #  do not show seed phrases :)
 config.json
+build/
 
 # Logs
 logs

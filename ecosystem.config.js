@@ -2,11 +2,11 @@ module.exports = {
     apps: [
         {
             name: "voter",
-            script: "./src/voter.js"
+            script: "./build/src/voter.js"
         },
         {
             name: "restake",
-            script: "./src/restake.js"
+            script: "./build/src/restake.js"
         }
     ]
 }
