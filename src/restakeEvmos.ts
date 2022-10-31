@@ -1,13 +1,12 @@
 import { Wallet as EvmosWallet } from "@ethersproject/wallet";
 import { createTxMsgWithdrawDelegatorReward, createTxMsgDelegate } from "@tharsis/transactions";
 import {
-    broadcast,
     signTransaction,
 } from "@hanchon/evmos-ts-wallet";
 import { ethToEvmos } from '@tharsis/address-converter';
 import { Big } from "big.js";
 import { shortAddress } from "./helpers";
-import { NetworkConfig, toEvmosFee, toFeeObject, Wallet } from "./config";
+import { NetworkConfig, toEvmosFee, Wallet } from "./config";
 import { ApiManager } from "./api/apiManager";
 import big from "big.js";
 

@@ -1,5 +1,5 @@
 import { Registry, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { defaultRegistryTypes, GasPrice, SigningStargateClient } from "@cosmjs/stargate";
+import { defaultRegistryTypes, SigningStargateClient } from "@cosmjs/stargate";
 import { NetworkConfig, Vote } from "./config";
 
 export const getSigner = async (endpoint: string, wallet: DirectSecp256k1HdWallet) =>

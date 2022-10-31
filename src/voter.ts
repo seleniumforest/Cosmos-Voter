@@ -97,6 +97,8 @@ const main = async () => {
             await processNetwork(apiManager, network, config.wallets);
         } catch (err) { console.error(err) }
     }
+
+    console.log("finished")
 };
 
 main();

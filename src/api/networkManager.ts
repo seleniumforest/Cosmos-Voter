@@ -1,4 +1,4 @@
-import axios, { Axios, AxiosResponse } from "axios";
+import axios from "axios";
 import { Network } from "./constants";
 import { Chain } from "@chain-registry/types";
 import { URL } from "url";
@@ -58,14 +58,14 @@ export class NetworkManager {
                 let now = Date.now();
 
                 if (Math.abs(now - blockTime) < 60000) {
-                    console.log(`${url} is alive, sync block ${blockHeight}`);
+                    //console.log(`${url} is alive, sync block ${blockHeight}`);
                     return url;
                 }
 
-                console.log(`${url} is alive, but not synced`);
+                //console.log(`${url} is alive, but not synced`);
                 return;
             } catch (_) {
-                console.log(`${url} is dead`)
+                //console.log(`${url} is dead`)
             }
         }));
 
@@ -85,7 +85,7 @@ export class NetworkManager {
                     timeout: 5000
                 });
             } catch (_) {
-                console.log(`${url} is dead`)
+                //console.log(`${url} is dead`)
             }
 
             if (!response || response.status !== 200)
@@ -96,11 +96,11 @@ export class NetworkManager {
             let now = Date.now();
 
             if (Math.abs(now - blockTime) < 60000) {
-                console.log(`${url} is alive, sync block ${blockHeight}`);
+                //console.log(`${url} is alive, sync block ${blockHeight}`);
                 return url;
             }
 
-            console.log(`${url} is alive, but not synced`);
+            //console.log(`${url} is alive, but not synced`);
             return;
         }));
 

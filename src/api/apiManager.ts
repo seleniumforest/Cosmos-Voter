@@ -1,6 +1,5 @@
 import axios from "axios";
 import { EndpointType, NetworkManager } from "./networkManager";
-import { Int53 } from "@cosmjs/math";
 import { defaultRegistryUrls, Network } from "./constants";
 import { URL } from "url";
 import { Coin } from "@cosmjs/proto-signing";
@@ -19,23 +18,20 @@ export class ApiManager {
     }
 
     async getSenderChaindata(addr: string): Promise<any> {
-        const options = {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        };
-
         let endpoints = this.manager.getEndpoints(EndpointType.REST);
         for (const endp of endpoints) {
-            let { data: { account: { base_account } } } = await axios.get<AccountResponse>(
-                `${endp}/cosmos/auth/v1beta1/accounts/${addr}`
-            );
+            try {
+                let { data: { account: { base_account } } } = await axios.get<AccountResponse>(
+                    `${endp}/cosmos/auth/v1beta1/accounts/${addr}`
+                );
 
-            return {
-                accountAddress: base_account.address,
-                sequence: base_account.sequence,
-                accountNumber: base_account.account_number,
-                pubkey: base_account.pub_key?.key
-            };
+                return {
+                    accountAddress: base_account.address,
+                    sequence: base_account.sequence,
+                    accountNumber: base_account.account_number,
+                    pubkey: base_account.pub_key?.key
+                };
+            } catch (err: any) { console.log(`Error getting accountinfo from ${endp} err ${err?.message}`) }
         }
     }
 
@@ -43,9 +39,11 @@ export class ApiManager {
         let endpoints = this.manager.getEndpoints(EndpointType.REST);
 
         for (const rest of endpoints) {
-            let rewardsUrl = `${rest}/cosmos/distribution/v1beta1/delegators/${address}/rewards`;
-            let result = await axios.get<Rewards>(rewardsUrl)
-            return result.data.rewards;
+            try {
+                let rewardsUrl = `${rest}/cosmos/distribution/v1beta1/delegators/${address}/rewards`;
+                let result = await axios.get<Rewards>(rewardsUrl)
+                return result.data.rewards;
+            } catch (err: any) { console.log(`Error getting rewards info from ${rest} err ${err?.message}`) }
         }
 
         return [];
@@ -106,155 +104,13 @@ export class ApiManager {
 
         for (const rpc of endpoints) {
             try {
-
-                // let { data: broadcastResult } = await axios.post<CheckTx>(
-                //     rpc + `/broadcast_tx_sync`, 
-                //     JSON.parse(bytes));
-
-                // let isTxIncluded = false;
-                // let attempts = 0;
-                // do {
-                //     let { data: searchResult } = await axios.get<{ result: { height: number }}>(rpc + `/tx`);
-                //     if (searchResult.result.height > 0)
-                //         return 0;
-
-                // } while (!isTxIncluded && attempts < 5)
-                    
-                // if (data.tx_response.height > 0) 
-                //     return data.tx_response.code; 
-
                 let client = await StargateClient.connect(rpc);
                 let result = await client.broadcastTx(bytes, 5000);
-                debugger;
                 return result;
             } catch (err) { console.warn(`cannot broadcast tx to ${rpc}`) }
         }
-        
+
         return Promise.reject(`error broadcasting tx with endp set ${endpoints}`);
-    }
-
-    async getLatestHeight(lastKnownHeight: number = 0): Promise<number> {
-        let endpoints = this.manager.getEndpoints(EndpointType.RPC);
-
-        let results = await Promise.all(endpoints.map(endp => {
-            return (async () => {
-                try {
-                    let url = `${endp}/status`
-                    let { data } = await axios({
-                        method: "GET",
-                        url,
-                        timeout: 5000
-                    });
-
-                    return parseInt(data.result.sync_info.latest_block_height);
-                } catch (err: any) { console.log(err?.message) }
-            })();
-        }));
-
-        let success = results.map(x => x) as number[];
-        let syncHeight = Math.max(...success);
-        return Math.max(syncHeight, lastKnownHeight);
-    }
-
-    async getBlockHeader(height: number): Promise<BlockHeader> {
-        let endpoints = this.manager.getEndpoints(EndpointType.RPC);
-        for (const rpc of endpoints) {
-            try {
-                let url = `${rpc}/block?height=${height}`
-                let { data } = await axios({
-                    method: "GET",
-                    url,
-                    timeout: 5000
-                });
-
-                this.manager.reportStats(rpc, EndpointType.RPC, true);
-                let header = data.result.block.header;
-                return {
-                    height: parseInt(header.height),
-                    time: new Date(header.time),
-                    hash: data.result.block_id.hash
-                }
-            } catch (err: any) {
-                console.log(`Error fetching height in ${this.manager.network} rpc ${rpc} error : ${err?.message} stack: ${err?.stack}`);
-                this.manager.reportStats(rpc, EndpointType.RPC, false);
-            }
-        }
-
-        throw Error(`Couldn't get new height for network ${this.manager.network} with endpoints set ${JSON.stringify(endpoints)}`);
-
-    }
-
-    fromBase64(decoded?: string): string | undefined {
-        if (decoded)
-            return Buffer.from(decoded, 'base64').toString();
-    }
-
-    apiToSmallInt(input: string | number) {
-        const asInt = Int53.fromString(input.toString());
-        return asInt.toNumber();
-    }
-
-    tryParseJson(data: string): any {
-        try {
-            return JSON.parse(data);
-        } catch (err: any) { }
-    }
-
-    async getTxsInBlock(height: number): Promise<Tx[]> {
-        let endpoints = this.manager.getEndpoints(EndpointType.RPC)
-        for (const rpc of endpoints) {
-            try {
-                let allTxs: RawTx[] = [];
-                let totalTxs: number;
-                let page = 1;
-
-                do {
-                    let url = `${rpc}/tx_search?query="tx.height%3D${height}"&page=${page++}`
-                    let { data: { result } }: { data: { result: TxsResponse } } =
-                        await axios({
-                            method: "GET",
-                            url,
-                            timeout: 5000
-                        });
-
-                    totalTxs = result.total_count;
-                    allTxs.push(...result.txs);
-                }
-                while (allTxs.length < totalTxs)
-
-                let result: Tx[] = allTxs.map(data => {
-                    return {
-                        tx: this.fromBase64(data.tx),
-                        code: this.apiToSmallInt(data.tx_result.code) || 0,
-                        events: data.tx_result.events.map(ev => {
-                            return {
-                                type: ev.type,
-                                attributes: ev.attributes.map(attr => {
-                                    return {
-                                        key: this.fromBase64(attr.key),
-                                        value: this.fromBase64(attr.value)
-                                    }
-                                })
-                            }
-                        }),
-                        log: this.tryParseJson(data.tx_result.log),
-                        hash: data.hash,
-                        data: this.fromBase64(data.tx_result.data),
-                        height: data.height,
-                        index: data.index
-                    }
-                });
-
-                if (result.length !== 0)
-                    return result;
-
-            } catch (err: any) {
-                console.log(`Error fetching txs in ${this.manager.network}/${height} rpc ${rpc} error : ${err?.message} stack: ${err?.stack}`);
-                this.manager.reportStats(rpc, EndpointType.RPC, false);
-            }
-        }
-
-        return [];
     }
 }
 
