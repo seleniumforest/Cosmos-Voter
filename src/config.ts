@@ -9,8 +9,8 @@ export const getConfig = async (): Promise<AppConfig> => {
         networks: config.networks.map(net => ({
             ...net,
             votingOptions: {
-                predefinedVotes: (net.votingOptions.predefinedVotes || [])
-                    .map(vote => ({ proposalId: vote.proposalId, option: vote.option as unknown as VoteOption })),
+                predefinedVotes: ((net.votingOptions as any)?.predefinedVotes || [])
+                    .map((vote: any) => ({ proposalId: vote.proposalId, option: vote.option as unknown as VoteOption })),
                 votingFee: net.votingOptions.votingFee as Fee
             },
             restakeOptions: {

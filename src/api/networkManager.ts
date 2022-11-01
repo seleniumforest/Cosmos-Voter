@@ -125,39 +125,10 @@ export class NetworkManager {
         throw new Error("Cannot get chain info from registry");
     }
 
-    reportStats(endpoint: string, type: EndpointType, result: boolean): void {
-        let endp = this.endpointRankings.get(type)!;
-
-        if (!endp)
-            throw Error(`Endpoint ${endpoint} doesnt exist`);
-
-        let el = endp.find(x => x.endpoint === endpoint)!;
-        result ? ++el.ok : --el.fail;
-    }
-
     getEndpoints(type: EndpointType): string[] {
         let result = [...this.endpointRankings.get(type)!.entries()]
-            .map(([_, value]) => value)
-            .sort((a, b) => a.ok + a.fail > b.ok + b.fail ? 1 : -1);
+            .map(([_, value]) => value.endpoint);
 
-        let minRequests =
-            result.reduce((prev, cur) =>
-                prev > cur.ok + cur.fail ? cur.ok + cur.fail : prev, Number.POSITIVE_INFINITY);
-
-        if (minRequests < this.minRequestsToTest)
-            return result.map(x => x.endpoint);
-
-        return result
-            .filter(x => x.ok / (x.ok + x.fail) > this.minSuccessRate)
-            .sort((a, b) => {
-                if (a.ok / a.fail <= 1)
-                    return 1;
-
-                if (b.ok / b.fail <= 1)
-                    return -1;
-
-                return (a.ok / (a.fail || 1)) > (b.ok / (b.fail || 1)) ? 1 : 0;
-            })
-            .map(x => x.endpoint);
+        return result;
     }
 }
