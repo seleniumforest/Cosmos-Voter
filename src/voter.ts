@@ -26,26 +26,27 @@ const vote = async (prop: Proposal, addr: string, apiManager: ApiManager, wallet
     let voteOption = (getPredefinedVoteOption(network, prop.proposal_id) ||
         await getMostPopularVoteOption(apiManager, prop.proposal_id))!;
 
+    let msg = {
+        typeUrl: "/cosmos.gov.v1beta1.MsgVote",
+        value: {
+            proposalId: Long.fromString(prop.proposal_id),
+            voter: addr,
+            option: voteOption.option
+        }
+    }
+
     for (let endp of endpoints) {
         let signer = await getSigner(endp, wallet);
-
-        let msg = {
-            typeUrl: "/cosmos.gov.v1beta1.MsgVote",
-            value: {
-                proposalId: Long.fromString(prop.proposal_id),
-                voter: addr,
-                option: voteOption.option
-            }
-        }
-
         console.log(`trying to vote for prop ${prop.proposal_id} - ${voteOption.option} from ${addr}`);
-        let txResult = await signer.signAndBroadcast(addr, [msg], toFeeObject(network.votingOptions.votingFee));
-        if (txResult.code === 0) {
-            console.log(`${network.prefix}: voting for proposal ${prop.proposal_id} success`);
-            break;
-        }
-        else
-            console.log(`${network.prefix}: voting for proposal ${prop.proposal_id} failed with code ${txResult.code}`);
+        try {
+            let txResult = await signer.signAndBroadcast(addr, [msg], toFeeObject(network.votingOptions.votingFee));
+            if (txResult.code === 0) {
+                console.log(`${network.prefix}: voting for proposal ${prop.proposal_id} success`);
+                break;
+            }
+            else
+                console.log(`${network.prefix}: voting for proposal ${prop.proposal_id} failed with code ${txResult.code}`);
+        } catch (err: any) { console.log(err?.message) }
     }
 }
 
