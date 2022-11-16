@@ -97,6 +97,21 @@
                 "claimFee": ["250000", "aevmos", "6250000000000000"],
                 "delegateFee": ["250000", "aevmos", "6250000000000000"]
             }
+        },
+        {
+            "prefix": "stars",
+            "name": "stargaze",
+            "derivationPath": "m/44'/118'/0'/0/",
+            "votingOptions": {
+                "votingFee": ["200000", "ustars", "5000"]
+            },
+            "restakeOptions": {
+                "minRestakeAmount": "500000",
+                "minWalletBalance": "200000",
+                "denom": "ustars",
+                "claimFee": ["180000", "ustars", "5000"],
+                "delegateFee": ["260000", "ustars", "7000"]
+            }
         }
     ]
 }
